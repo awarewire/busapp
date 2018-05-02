@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xmlns:tx="http://www.springframework.org/schema/tx"
+       xmlns:jdbc="http://www.springframework.org/schema/jdbc"
+       xmlns:mybatis="http://mybatis.org/schema/mybatis-spring"
+       xsi:schemaLocation="http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd
+     http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+     http://www.springframework.org/schema/jdbc http://www.springframework.org/schema/jdbc/spring-jdbc.xsd
+     http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx.xsd
+     http://mybatis.org/schema/mybatis-spring http://mybatis.org/schema/mybatis-spring.xsd">
+
+
+	<bean id="myDataSource"
+		class="org.springframework.jdbc.datasource.DriverManagerDataSource">
+		<property name="driverClassName" value="com.mysql.jdbc.Driver" />
+		<property name="url" value="jdbc:mysql://localhost:3306/busapp_bd" />
+		<property name="username" value="admin" />
+		<property name="password" value="#AdminAdmin123" />
+	</bean>
+	<!-- <bean id="dataSource" class="org.springframework.jndi.JndiObjectFactoryBean"> -->
+	<!-- <property name="jndiName" value="java:comp/env/jdbc/filas_virtuales"/> -->
+	<!-- </bean> -->
+
+	<!-- Gestor de transacciones, use DataSourceTransactionManager" para JDBC local tx -->
+	<bean id="transactionManager"
+		class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+		<property name="dataSource" ref="myDataSource" />
+	</bean>
+
+	<bean id="configurationMyBatis" class="org.apache.ibatis.session.Configuration">
+		<property name="callSettersOnNulls" value="true"/>
+		<property name="returnInstanceForEmptyRow" value="true"/>
+	</bean>
+
+	<!-- define the SqlSessionFactory -->
+	<bean id="sqlSessionFactory" class="org.mybatis.spring.SqlSessionFactoryBean">
+		<property name="dataSource" ref="myDataSource" />
+		<property name="typeAliasesPackage" value="cl.busapp.db.entities" />
+		<property name="mapperLocations" value="classpath*:cl/busapp/db/mybatis/**/*.xml"/>
+		<property name="configuration" ref="configurationMyBatis"/>
+	</bean>
+
+
+	<!-- enable transaction demarcation with annotations -->
+	<tx:annotation-driven />
+
+	<!-- DEFINIMOS LAS COMPONENTES -->	
+	<!-- enable component scanning and autowire (beware that this does not enable 
+		mapper scanning!) -->
+	<context:component-scan base-package="cl.busapp.services"/>
+	
+	<!-- Habilita el uso de anotaciones -->
+	<context:annotation-config/>	
+
+	<!-- scan for mappers and let them be autowired -->
+	<mybatis:scan base-package="cl.busapp.db.mybatis.mapper" />
+
+	<!-- Bean de DAO para manejar la logica de la base de datos -->
+	<bean id="usuarioDAO" class="cl.busapp.db.mybatis.dao.UsuarioDAO"/>
+	<bean id="empresaDAO" class="cl.busapp.db.mybatis.dao.EmpresaDAO"/>
+	
+	
+</beans>
